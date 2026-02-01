@@ -22,4 +22,3 @@ from django.db import models
 
 
 # Cross word with word bank
-

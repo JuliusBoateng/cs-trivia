@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class TriviaConfig(AppConfig):
+class CrissCrossConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'trivia'
+    name = 'criss_cross'
