@@ -1,3 +1,47 @@
-html {
-    font-family: "Arial", sans-serif;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
+
+html, body {
+    height: 100%;
+  }
+
+html {
+    font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    margin: 0;
+}
+
+.main {
+    max-width: 1440px;
+    margin: 0 auto;
+    height: 100%;
+}
+
+.puzzle-panel {
+    display: flex;
+    justify-content: center;
+    height: 80%;
+}
+
+.board {
+    display: grid;
+    border: 1px solid black;
+    grid-template-columns: repeat(15, 1fr);
+    grid-template-rows: repeat(15, 1fr);
+    max-width: 800px;
+}
+
+.cell {
+    border: 1px solid black;
+    text-align: center;
+    aspect-ratio: 1 / 1;
+}
+
+h1 {
+    text-align: center;
+  }
