@@ -3,6 +3,7 @@
 <html lang="en-US">
   <head>
     <link rel="stylesheet" href="{% static 'criss_cross/style.css' %}">
+    <script src="{% static 'js/main.js' %}"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>Criss-Cross</title>
@@ -11,12 +12,7 @@
     <h1>Criss-Cross</h1>
     <div class="main">
         <div class = "puzzle-panel">
-            <div class="board">
-                <!-- Dynamically create cells -->
-                    <div class="cell">
-                    a
-                    </div>
-            </div>
+            <div id="puzzle" class="board"></div>
         </div>
     </div>
   </body>
