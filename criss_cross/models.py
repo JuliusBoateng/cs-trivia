@@ -16,17 +16,13 @@ class Board(models.Model):
                 name="board_cols_range"
             )
         ]
-
-class CoordinateValue(models.Model):
-    value = models.CharField(max_length=1, unique=True)
     
 class BoardCoordinate(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE)
     row_index = models.PositiveIntegerField()
     col_index = models.PositiveIntegerField()
     pk = models.CompositePrimaryKey("board", "row_index", "col_index")
-    
-    coordinate_value = models.ForeignKey(CoordinateValue, on_delete=models.CASCADE)
+    value = models.CharField(max_length=1)
 
     def clean(self):
         if self.row_index >= self.board.rows:
