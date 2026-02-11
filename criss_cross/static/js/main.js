@@ -15,9 +15,8 @@ function createCells(rows, cols) {
 }
 
 document.addEventListener("DOMContentLoaded", (event) => {
-    console.log("DOM fully loaded and parsed");
-    cells = createCells(15, 15);
-
     puzzle = document.getElementById("puzzle")
+    
+    cells = createCells(15, 15);
     cells.forEach(cell => puzzle.appendChild(cell));
 });
