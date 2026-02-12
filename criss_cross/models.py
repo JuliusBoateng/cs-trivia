@@ -16,13 +16,18 @@ class Board(models.Model):
                 name="board_cols_range"
             )
         ]
-    
+
+class Solution(models.Model):
+    question = models.CharField(max_length=150)
+    answer = models.CharField(max_length=21)
+
 class BoardCoordinate(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE)
     row_index = models.PositiveIntegerField()
     col_index = models.PositiveIntegerField()
     pk = models.CompositePrimaryKey("board", "row_index", "col_index")
     value = models.CharField(max_length=1)
+    solution = models.ForeignKey(Solution, on_delete=models.CASCADE)
 
     def clean(self):
         if self.row_index >= self.board.rows:
@@ -31,3 +36,4 @@ class BoardCoordinate(models.Model):
         if self.col_index >= self.board.cols:
             raise ValidationError("Col Index out of bounds")
 
+# Next map solution to coordinates
