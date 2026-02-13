@@ -27,7 +27,7 @@ class BoardCell(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["board", "row_index", "col_index"],
-                name='board_cell_unique' # Must provide a unique name
+                name='board_cell_unique_board_row_col'
             )
         ]
 
@@ -41,6 +41,7 @@ class BoardCell(models.Model):
 class Clue(models.Model):
     question = models.CharField(max_length=150)
     answer = models.CharField(max_length=21)
+    length = models.PositiveIntegerField() # derived
 
 class CluePlacement(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE)
@@ -56,9 +57,27 @@ class CluePlacement(models.Model):
         ]
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["board", "start_row", "start_col", "direction"],
+                name="clue_placement_unique_row_col_direction")
+        ]
+
+# Derived from CluePlacement
 class ClueCell(models.Model):
     clue_placement = models.ForeignKey(CluePlacement, on_delete=models.CASCADE)
     board_cell = models.ForeignKey(BoardCell, on_delete=models.CASCADE)
     clue_index = models.PositiveIntegerField()
 
-    # WIP
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["clue_placement", "clue_index"],
+                name="unique_index_per_placement"
+            ),
+            models.UniqueConstraint(
+                fields=["clue_placement", "board_cell"],
+                name="unique_cell_per_placement"
+            )
+        ]
