@@ -17,17 +17,19 @@ class Board(models.Model):
             )
         ]
 
-class Solution(models.Model):
-    question = models.CharField(max_length=150)
-    answer = models.CharField(max_length=21)
-
-class BoardCoordinate(models.Model):
+class BoardCell(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE)
     row_index = models.PositiveIntegerField()
     col_index = models.PositiveIntegerField()
-    pk = models.CompositePrimaryKey("board", "row_index", "col_index")
     value = models.CharField(max_length=1)
-    solution = models.ForeignKey(Solution, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["board", "row_index", "col_index"],
+                name='board_cell_unique' # Must provide a unique name
+            )
+        ]
 
     def clean(self):
         if self.row_index >= self.board.rows:
@@ -36,4 +38,27 @@ class BoardCoordinate(models.Model):
         if self.col_index >= self.board.cols:
             raise ValidationError("Col Index out of bounds")
 
-# Next map solution to coordinates
+class Clue(models.Model):
+    question = models.CharField(max_length=150)
+    answer = models.CharField(max_length=21)
+
+class CluePlacement(models.Model):
+    board = models.ForeignKey(Board, on_delete=models.CASCADE)
+    clue = models.ForeignKey(Clue, on_delete=models.CASCADE)
+    start_row = models.PositiveIntegerField()
+    start_col = models.PositiveIntegerField()
+
+    direction = models.CharField(
+        max_length=1,
+        choices=[
+            ("A", "Across"),
+            ("D", "Down"),
+        ]
+    )
+
+class ClueCell(models.Model):
+    clue_placement = models.ForeignKey(CluePlacement, on_delete=models.CASCADE)
+    board_cell = models.ForeignKey(BoardCell, on_delete=models.CASCADE)
+    clue_index = models.PositiveIntegerField()
+
+    # WIP
