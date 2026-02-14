@@ -22,43 +22,19 @@ class Board(models.Model):
         ]
 
 '''
-Physical squares on the board
-'''
-class BoardCell(models.Model):
-    board = models.ForeignKey(Board, on_delete=models.CASCADE)
-    row_index = models.PositiveIntegerField()
-    col_index = models.PositiveIntegerField()
-    value = models.CharField(max_length=1)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["board", "row_index", "col_index"],
-                name='board_cell_unique_board_row_col'
-            )
-        ]
-
-    def clean(self):
-        if self.col_index >= self.board.cols:
-            raise ValidationError("Col Index out of bounds")
-
-        if self.row_index >= self.board.rows:
-            raise ValidationError("Row Index out of bounds")
-
-'''
-Questions/Answers for puzzle
+Questions/Answers for puzzles
 '''
 class Clue(models.Model):
     question = models.CharField(max_length=150)
     answer = models.CharField(max_length=21)
-    length = models.PositiveIntegerField() # derived
+    answer_length = models.PositiveIntegerField() # derived
 
     def save(self, *args, **kwargs):
-        self.length = len(self.answer)
+        self.answer_length = len(self.answer)
         super().save(*args, **kwargs)
 
 '''
-Mapping between board and clue
+Mapping between Board and Clue
 '''
 class CluePlacement(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE)
@@ -87,41 +63,60 @@ class CluePlacement(models.Model):
     
     def clean(self):
         if self.start_col >= self.board.cols:
-            raise ValidationError("start_col out of bounds")
+            raise ValidationError(f"start_col: {self.start_col} out of bounds: {self.board.cols}")
 
         if self.start_row >= self.board.rows:
-            raise ValidationError("start_row out of bounds")
+            raise ValidationError(f"start_row: {self.start_row} out of bounds: {self.board.rows}")
 
         if self.direction == "A":
-            if self.start_col + self.clue.length > self.board.cols:
-                raise ValidationError("Across clue overflows board")
+            if self.start_col + self.clue.answer_length > self.board.cols:
+                raise ValidationError(f"Across answer out of bounds: {self.start_col + self.clue.answer_length} expected: {self.board.cols}")
 
         if self.direction == "D":
-            if self.start_row + self.clue.length > self.board.rows:
-                raise ValidationError("Down clue overflows board")
-
+            if self.start_row + self.clue.answer_length > self.board.rows:
+                raise ValidationError(f"Down answer out of bounds: {self.start_row + self.clue.answer_length } expected: {self.board.rows}")
 
 '''
-Mapping of answer to physical cells on the board
+Mapping between CluePlacement and Board cells
 '''
 class ClueCell(models.Model):
     clue_placement = models.ForeignKey(CluePlacement, on_delete=models.CASCADE)
-    board_cell = models.ForeignKey(BoardCell, on_delete=models.CASCADE)
+    row_index = models.PositiveIntegerField()
+    col_index = models.PositiveIntegerField()
     answer_index = models.PositiveIntegerField()
 
-    # It's fine for placements to appear on multiple cells.
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["clue_placement", "board_cell"],
-                name="clue_cell_unique_cell_per_placement"
-            ), # placements must only have one index for a specific cell
+                fields=["clue_placement", "row_index", "col_index"],
+                name='clue_cell_unique_placement_row_col'
+            ),
             models.UniqueConstraint(
                 fields=["clue_placement", "answer_index"],
                 name="clue_cell_unique_index_per_placement"
-            ), # prevents the same index to mapping to different cells on the board
+            ),
         ]
 
     def clean(self):
-        if self.board_cell.board_id != self.clue_placement.board_id:
-            raise ValidationError("Cell must belong to same board")
+        if self.col_index >= self.clue_placement.cols:
+            raise ValidationError(f"col_index: {self.col_index} out of bounds: {self.clue_placement.cols}")
+
+        if self.row_index >= self.clue_placement.rows:
+            raise ValidationError(f"row_index: {self.row_index} out of bounds: {self.clue_placement.rows}")
+        
+        if self.answer_index >= self.clue_placement.clue.answer_length:
+            raise ValidationError(f"answer_index: {self.answer_index} exceeds answer_length: {self.clue_placement.clue.answer_length}")
+
+        if self.clue_placement.direction == "A":
+            if self.row_index != self.clue_placement.start_row:
+                raise ValidationError(f"row_index: {self.row_index} does not match start_row: {self.clue_placement.start_row}")
+                
+            if self.col_index != self.clue_placement.start_col + self.answer_index:
+                raise ValidationError(f"col_index: {self.col_index} does not match expected col_index: {self.clue_placement.start_col + self.answer_index}")
+
+        if self.clue_placement.direction == "D":
+            if self.col_index != self.clue_placement.start_col:
+                raise ValidationError(f"col_index: {self.col_index} does not match start_col: {self.clue_placement.start_col}")
+                
+            if self.row_index != self.clue_placement.start_row + self.answer_index:
+                raise ValidationError(f"row_index: {self.row_index} does not match expected row_index: {self.clue_placement.start_row + self.answer_index:}")
