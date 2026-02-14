@@ -10,14 +10,15 @@ class Board(models.Model):
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(rows__gte=5) & models.Q(rows__lte=21),
-                name="board_rows_range"),
+                name="board_rows_range"
+            ),
             models.CheckConstraint(
                 condition=models.Q(cols__gte=5) & models.Q(cols__lte=21),
                 name="board_cols_range"
             ),
             models.CheckConstraint(
                 condition=models.Q(cols=models.F("rows")),
-                name="board_row_col_symmetry"
+                name="board_symmetry"
             )
         ]
 
@@ -30,6 +31,7 @@ class Clue(models.Model):
     answer_length = models.PositiveIntegerField() # derived
 
     def save(self, *args, **kwargs):
+        self.answer = self.answer.upper().strip() # normalize
         self.answer_length = len(self.answer)
         super().save(*args, **kwargs)
 
@@ -98,25 +100,25 @@ class ClueCell(models.Model):
         ]
 
     def clean(self):
-        if self.col_index >= self.clue_placement.cols:
-            raise ValidationError(f"col_index: {self.col_index} out of bounds: {self.clue_placement.cols}")
+        if self.col_index >= self.clue_placement.board.cols:
+            raise ValidationError(f"col_index: {self.col_index} out of bounds: {self.clue_placement.board.cols}")
 
-        if self.row_index >= self.clue_placement.rows:
-            raise ValidationError(f"row_index: {self.row_index} out of bounds: {self.clue_placement.rows}")
+        if self.row_index >= self.clue_placement.board.rows:
+            raise ValidationError(f"row_index: {self.row_index} out of bounds: {self.clue_placement.board.rows}")
         
         if self.answer_index >= self.clue_placement.clue.answer_length:
             raise ValidationError(f"answer_index: {self.answer_index} exceeds answer_length: {self.clue_placement.clue.answer_length}")
 
         if self.clue_placement.direction == "A":
             if self.row_index != self.clue_placement.start_row:
-                raise ValidationError(f"row_index: {self.row_index} does not match start_row: {self.clue_placement.start_row}")
+                raise ValidationError(f"Across row_index: {self.row_index} does not match start_row: {self.clue_placement.start_row}")
                 
             if self.col_index != self.clue_placement.start_col + self.answer_index:
-                raise ValidationError(f"col_index: {self.col_index} does not match expected col_index: {self.clue_placement.start_col + self.answer_index}")
+                raise ValidationError(f"Across col_index: {self.col_index} does not match expected col_index: {self.clue_placement.start_col + self.answer_index}")
 
         if self.clue_placement.direction == "D":
             if self.col_index != self.clue_placement.start_col:
-                raise ValidationError(f"col_index: {self.col_index} does not match start_col: {self.clue_placement.start_col}")
+                raise ValidationError(f"Down col_index: {self.col_index} does not match start_col: {self.clue_placement.start_col}")
                 
             if self.row_index != self.clue_placement.start_row + self.answer_index:
-                raise ValidationError(f"row_index: {self.row_index} does not match expected row_index: {self.clue_placement.start_row + self.answer_index:}")
+                raise ValidationError(f"Down row_index: {self.row_index} does not match expected row_index: {self.clue_placement.start_row + self.answer_index}")
