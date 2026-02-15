@@ -2,33 +2,48 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from unicodedata import normalize
 from re import sub
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
-class Board(models.Model):
-    rows = models.PositiveIntegerField()
-    cols = models.PositiveIntegerField()
-
-    class Meta:
-        constraints = [
-            models.CheckConstraint(
-                condition=models.Q(rows__gte=5) & models.Q(rows__lte=21),
-                name="board_rows_range"
-            ),
-            models.CheckConstraint(
-                condition=models.Q(cols__gte=5) & models.Q(cols__lte=21),
-                name="board_cols_range"
-            ),
-            models.CheckConstraint(
-                condition=models.Q(cols=models.F("rows")),
-                name="board_symmetry"
-            )
-        ]
-
 class Category(models.Model):
     name = models.CharField(max_length=16, unique=True)
 
     class Meta:
         ordering = ["name"]
+
+class Board(models.Model):
+    MIN_ROWS, MAX_ROWS = 5, 21
+    DEFAULT_ROWS = 15
+
+    rows = models.PositiveIntegerField(
+        default=DEFAULT_ROWS,
+        validators=[
+            MinValueValidator(MIN_ROWS),
+            MaxValueValidator(MAX_ROWS)
+            ]
+        )
+    
+    cols = models.PositiveIntegerField(
+        default=DEFAULT_ROWS,
+        validators=[
+            MinValueValidator(MIN_ROWS),
+            MaxValueValidator(MAX_ROWS)
+            ]
+        )
+    
+    categories = models.ManyToManyField(Category, related_name="Boards")
+    
+    def clean(self):
+        if self.rows != self.cols:
+            raise ValidationError({"rows:" f"rows: {self.rows} and cols: {self.cols} must match"})
+        
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(cols=models.F("rows")),
+                name="board_symmetry"
+            )
+        ]
 
 '''
 Questions/Answers for puzzles
@@ -38,7 +53,7 @@ class Clue(models.Model):
     answer_raw = models.CharField(max_length=21)
     answer_normalized = models.CharField(max_length=21)
     answer_length = models.PositiveIntegerField() # derived
-    categories = models.ManyToManyField(Category)
+    categories = models.ManyToManyField(Category, related_name="Clues")
 
     @staticmethod
     def _normalize_answer(s):
@@ -80,21 +95,32 @@ class CluePlacement(models.Model):
                 name="clue_placement_unique_board_clue"
             )
         ]
-    
-    def clean(self):
+
+    def _bounds_check(self):
         if self.start_col >= self.board.cols:
-            raise ValidationError(f"start_col: {self.start_col} out of bounds: {self.board.cols}")
+            raise ValidationError({"start_col": f"{self.start_col} out of bounds: {self.board.cols}"})
 
         if self.start_row >= self.board.rows:
-            raise ValidationError(f"start_row: {self.start_row} out of bounds: {self.board.rows}")
+            raise ValidationError({"start_row": f"{self.start_row} out of bounds: {self.board.rows}"})
 
+    def _across_direction_check(self):
         if self.direction == "A":
-            if self.start_col + self.clue.answer_length > self.board.cols:
-                raise ValidationError(f"Across answer out of bounds: {self.start_col + self.clue.answer_length} expected: {self.board.cols}")
-
+            across = self.start_col + self.clue.answer_length
+            
+            if across > self.board.cols:
+                raise ValidationError({"start_col": f"Across answer placement: {across} out of bounds: {self.board.cols}"})
+    
+    def _down_direction_check(self):
         if self.direction == "D":
-            if self.start_row + self.clue.answer_length > self.board.rows:
-                raise ValidationError(f"Down answer out of bounds: {self.start_row + self.clue.answer_length } expected: {self.board.rows}")
+            down = self.start_row + self.clue.answer_length
+
+            if down > self.board.rows:
+                raise ValidationError({"start_row": f"Down answer placement: {down} out of bounds: {self.board.rows}"})
+
+    def clean(self):
+        self._bounds_check()
+        self._across_direction_check()
+        self._down_direction_check()
 
 '''
 Mapping between CluePlacement and Board cells
@@ -117,32 +143,45 @@ class ClueCell(models.Model):
             ),
         ]
 
-    def clean(self):
-        placement = self.clue_placement
-        board = placement.board
-        clue = placement.clue
+    def _bounds_check(self):
+        board = self.clue_placement.board
 
         if self.col_index >= board.cols:
-            raise ValidationError(f"col_index: {self.col_index} out of bounds: {board.cols}")
+            raise ValidationError({"col_index": f"{self.col_index} out of bounds: {board.cols}"})
 
         if self.row_index >= board.rows:
-            raise ValidationError(f"row_index: {self.row_index} out of bounds: {board.rows}")
-        
+            raise ValidationError({"row_index": f"{self.row_index} out of bounds: {board.rows}"})
+    
+    def _index_check(self):
+        clue = self.clue_placement.clue
+
         if self.answer_index >= clue.answer_length:
-            raise ValidationError(f"answer_index: {self.answer_index} exceeds answer_length: {clue.answer_length}")
+            raise ValidationError({"answer_index": f"{self.answer_index} exceeds answer_length: {clue.answer_length}"})
+
+    def _across_direction_check(self):
+        placement = self.clue_placement
 
         if placement.direction == "A":
             if self.row_index != placement.start_row:
-                raise ValidationError(f"Across row_index: {self.row_index} does not match start_row: {placement.start_row}")
+                raise ValidationError({"row_index": f"Across {self.row_index} does not match start_row: {placement.start_row}"})
             
             expected_col_index = placement.start_col + self.answer_index
             if self.col_index != expected_col_index:
-                raise ValidationError(f"Across col_index: {self.col_index} does not match expected col_index: {expected_col_index}")
+                raise ValidationError({"col_index": f"Down {self.col_index} does not match expected col_index: {expected_col_index}"})
+
+    def _down_direction_check(self):
+        placement = self.clue_placement
 
         if placement.direction == "D":
             if self.col_index != placement.start_col:
-                raise ValidationError(f"Down col_index: {self.col_index} does not match start_col: {placement.start_col}")
+                raise ValidationError({"col_index": f"Down {self.col_index} does not match start_col: {placement.start_col}"})
             
             expected_row_index = placement.start_row + self.answer_index
             if self.row_index != expected_row_index:
-                raise ValidationError(f"Down row_index: {self.row_index} does not match expected row_index: {expected_row_index}")
+                raise ValidationError({"row_index": f"Down {self.row_index} does not match expected row_index: {expected_row_index}"})
+
+    def clean(self):
+        self._bounds_check()
+        self._index_check()
+        self._across_direction_check()
+        self._down_direction_check()
