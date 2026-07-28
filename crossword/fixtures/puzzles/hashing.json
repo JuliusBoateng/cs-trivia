@@ -1,0 +1,142 @@
+{
+  "board": {
+    "title": "Hashing",
+    "author": "Julius Boateng",
+    "puzzle_number": 23,
+    "published_at": "2026-07-28T10:20:58+00:00",
+    "description": "Hashes are used everywhere in computer science. They are used for efficient data structures, data integrity checks, and cryptographic security. This puzzle explores common hashing techniques and applications.",
+    "rows": 15,
+    "cols": 15,
+    "categories": ["Algorithms"]
+  },
+  "clues": [
+    {
+      "question": "Fixed-length value produced by a cryptographic hash function like MD5 or SHA-256",
+      "display_answer": "DIGEST",
+      "anagram": "SIDTEG",
+      "direction": "D",
+      "start_row": 0,
+      "start_col": 10
+    },
+    {
+      "question": "Hash ___; two distinct inputs produce the same hash value; inevitable due to the pigeonhole principle",
+      "display_answer": "COLLISION",
+      "anagram": "IOOSLLCIN",
+      "direction": "D",
+      "start_row": 1,
+      "start_col": 5
+    },
+    {
+      "question": "___ resistance; property of cryptographic hash functions where finding an input that produces a given hash value is computationally infeasible",
+      "display_answer": "PREIMAGE",
+      "anagram": "RIMAEGEP",
+      "direction": "A",
+      "start_row": 1,
+      "start_col": 7
+    },
+    {
+      "question": "___ filter; probabilistic data structure using multiple hash functions to test if an item belongs to a set; false positives, no false negatives",
+      "display_answer": "BLOOM",
+      "anagram": "BOMLO",
+      "direction": "D",
+      "start_row": 2,
+      "start_col": 2
+    },
+    {
+      "question": "___ hash; hashing technique that efficiently updates a hash value for overlapping substrings of data",
+      "display_answer": "ROLLING",
+      "anagram": "LINGLOR",
+      "direction": "A",
+      "start_row": 2,
+      "start_col": 4
+    },
+    {
+      "question": "___ tree; hash tree where each parent node is the hash of its children; root summarizes the entire dataset",
+      "display_answer": "MERKLE",
+      "anagram": "RKLEME",
+      "direction": "A",
+      "start_row": 3,
+      "start_col": 9
+    },
+    {
+      "question": "___-sensitive hashing; hashing technique that intentionally causes similar input items to collide; used for similarity search",
+      "display_answer": "LOCALITY",
+      "anagram": "ALIYTCOL",
+      "direction": "D",
+      "start_row": 3,
+      "start_col": 13
+    },
+    {
+      "question": "___ hashing; technique that randomly chooses from a family of hash functions; reduces the impact of unlucky input distributions",
+      "display_answer": "UNIVERSAL",
+      "anagram": "SREVLIUAN",
+      "direction": "D",
+      "start_row": 4,
+      "start_col": 3
+    },
+    {
+      "question": "___ hashing; hashing technique where resizing a hash table remaps a small fraction of keys; used to minimize key reassignment in distributed systems",
+      "display_answer": "CONSISTENT",
+      "anagram": "NNECOSTSIT",
+      "direction": "A",
+      "start_row": 5,
+      "start_col": 1
+    },
+    {
+      "question": "Value derived from data to detect changes during storage or transmission; verifies integrity but not authenticity",
+      "display_answer": "CHECKSUM",
+      "anagram": "MCCKESHU",
+      "direction": "D",
+      "start_row": 5,
+      "start_col": 1
+    },
+    {
+      "question": "___ effect; cryptographic property where a small input change produces a drastically different hash",
+      "display_answer": "AVALANCHE",
+      "anagram": "ENAAHVALC",
+      "direction": "D",
+      "start_row": 6,
+      "start_col": 12
+    },
+    {
+      "question": "Random value added to an input before hashing; gives identical inputs different hashes and protects against precomputed table attacks",
+      "display_answer": "SALT",
+      "anagram": "SATL",
+      "direction": "D",
+      "start_row": 7,
+      "start_col": 9
+    },
+    {
+      "question": "___ paradox; probability phenomenon showing hash collisions become likely after roughly the square root of the number of possible hash values",
+      "display_answer": "BIRTHDAY",
+      "anagram": "YATHDBIR",
+      "direction": "A",
+      "start_row": 10,
+      "start_col": 6
+    },
+    {
+      "question": "___ hashing; guarantees no collisions for a fixed set of keys; possible because the key set is known in advance",
+      "display_answer": "PERFECT",
+      "anagram": "REPTECF",
+      "direction": "A",
+      "start_row": 12,
+      "start_col": 7
+    },
+    {
+      "question": "Hashing algorithm for estimating the similarity of two sets by comparing signatures built from minimum hash values",
+      "display_answer": "MINHASH",
+      "anagram": "SHAHMIN",
+      "direction": "A",
+      "start_row": 13,
+      "start_col": 6
+    },
+    {
+      "question": "Data structure that stores key-value pairs by mapping keys to array indices using hash functions; handles collisions via chaining or open addressing",
+      "display_answer": "HASHTABLE",
+      "anagram": "LAESHABTH",
+      "direction": "A",
+      "start_row": 14,
+      "start_col": 4
+    }
+  ]
+}
