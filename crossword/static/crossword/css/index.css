@@ -58,8 +58,14 @@ main {
   text-decoration: none;
 }
 
+.hero-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .puzzle-section {
   margin-top: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .puzzle-section h2 {
@@ -82,7 +88,7 @@ main {
 }
 
 .starting-puzzle-section {
-  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .starting-puzzle-section h2 {
@@ -125,10 +131,41 @@ main {
 }
 
 .related-content {
-  margin-top: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .related-content h2 {
   font-size: 1.5rem;
   margin: 0 0 1rem;
+}
+
+.illustration-figure {
+  margin: 0;
+  max-width: 600px;
+}
+
+.illustration-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+
+  border: 1px solid #d1d5db;
+  border-radius: 20px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+.illustration-caption {
+  margin-top: 0.5rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+.illustration-caption-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.illustration-caption-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
